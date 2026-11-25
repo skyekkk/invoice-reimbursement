@@ -5,6 +5,7 @@ __pycache__/
 .env.*
 profile.json
 profile.local.json
+qq-mail.json
 原始资料/
 工作底稿/
 飞书上传附件/

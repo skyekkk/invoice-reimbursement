@@ -20,7 +20,8 @@ ORIGIN = "https://github.com/" + REPO
 API = "https://api.github.com/repos/" + REPO
 STATE = ".skill-install.json"
 REQUIRED = {"SKILL.md", "VERSION", "README.md", "scripts/sync_skill.py", "scripts/github_snapshot.py",
-            "references/profile.md", "assets/报销单-空白.xlsx", "config/profile.example.json", "agents/openai.yaml"}
+            "references/profile.md", "assets/报销单-空白.xlsx", "config/profile.example.json", "agents/openai.yaml",
+            "scripts/qq_mail.py", "references/qq-mail.md"}
 MAX_BYTES = 20 * 1024 * 1024
 
 

@@ -108,11 +108,32 @@ class SnapshotTests(unittest.TestCase):
     def test_swap_failure_restores_original(self):
         real_rename=m.os.rename
         def fail_stage(src,dst):
-            if Path(src).name=='stage' and Path(dst)==self.root:raise OSError('simulated rename failure')
+            if Path(src).name=='stage' and Path(dst).resolve()==self.root.resolve():raise OSError('simulated rename failure')
             return real_rename(src,dst)
         with patch.object(m.os,'rename',side_effect=fail_stage):
             with self.assertRaises(OSError):self.sync()
         self.assertEqual((self.root/'VERSION').read_bytes(),b'1.0.0\n')
+
+    def test_backup_link_into_skill_is_blocked(self):
+        (self.root/'backups').mkdir()
+        (self.base/'backups').symlink_to(self.root/'backups', target_is_directory=True)
+        with patch.object(m.shutil, 'copytree') as copy:
+            self.assertEqual(self.sync()['status'], 'blocked')
+            copy.assert_not_called()
+        self.assertEqual((self.root/'VERSION').read_bytes(), b'1.0.0\n')
+
+    def test_double_swap_failure_preserves_recovery_directory(self):
+        real_rename = m.os.rename
+        def fail_restore(src, dst):
+            if Path(src).name in {'stage', 'previous'} and Path(dst).resolve() == self.root.resolve():
+                raise OSError('simulated swap and restore failure')
+            return real_rename(src, dst)
+        with patch.object(m.os, 'rename', side_effect=fail_restore):
+            result = self.sync()
+        self.assertEqual(result['status'], 'unavailable')
+        self.assertFalse(self.root.exists())
+        self.assertEqual((Path(result['recovery'])/'VERSION').read_bytes(), b'1.0.0\n')
+        self.assertEqual((Path(result['backup'])/'VERSION').read_bytes(), b'1.0.0\n')
 
 
 if __name__=='__main__':unittest.main()

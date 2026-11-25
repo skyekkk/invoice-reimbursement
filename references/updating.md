@@ -10,6 +10,8 @@
 
 API限流、网络、目录权限或完整性校验失败时明确报告未完成，不静默执行旧规则。该模式无需Git与GitHub登录，仅需Python 3；更新不执行下载包里的程序。
 
+备份路径按真实路径检查，不能经链接落入技能内部。若目录交换失败会尝试恢复；恢复也失败时返回`unavailable`，并保留`recovery`旧目录及`backup`备份位置，不清理可恢复资料。先恢复到返回的`path`并核验完整，再继续使用。
+
 ## Git安装方式
 
 脚本每次实际 `git fetch` 再比较提交。主分支干净且远端可快进时，先把旧版工作文件复制到 `XDG_STATE_HOME/invoice-reimbursement/backups/`；无该环境变量时为 `~/.local/state/invoice-reimbursement/backups/`。备份含旧提交编号；不复制.git，不删除旧Git历史。全部Git调用（含fetch）用新建空目录关闭钩子及子模块自动执行；新版与本地被忽略文件路径冲突时也停止覆盖。个人配置在技能目录外，不参与更新。

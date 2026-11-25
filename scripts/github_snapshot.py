@@ -153,6 +153,8 @@ def sync_snapshot(root, check_only=False, backup_root=None):
     state_path = root / STATE
     if root.is_symlink() or state_path.is_symlink() or not state_path.is_file():
         return response("not-managed", "缺少可信安装记录，请按README使用完整安装方式。")
+    root = root.resolve()
+    state_path = root / STATE
     state = json.loads(state_path.read_text(encoding="utf-8"))
     if state.get("origin") != ORIGIN or not re.fullmatch(r"[a-f0-9]{40}", state.get("commit", "")):
         return response("blocked", "更新来源绑定异常，未更新。")
@@ -182,15 +184,16 @@ def sync_snapshot(root, check_only=False, backup_root=None):
                 break
             if parent.exists() and (parent.is_symlink() or not parent.is_dir()):
                 return response("blocked", "新版路径与本地文件或链接冲突，未更新。")
-    backup_root = Path(backup_root or default_backup_root()).expanduser().absolute()
+    backup_root = Path(backup_root or default_backup_root()).expanduser().resolve()
     if backup_root == root or root in backup_root.parents:
         return response("blocked", "备份位置不能位于技能目录内。")
     backup_root.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     backup = backup_root / (stamp + "-" + before[:12])
     shutil.copytree(root, backup, symlinks=True)
-    with tempfile.TemporaryDirectory(prefix=".invoice-update-", dir=str(root.parent)) as work:
-        work = Path(work)
+    work = Path(tempfile.mkdtemp(prefix=".invoice-update-", dir=str(root.parent)))
+    preserve_work = False
+    try:
         stage = work / "stage"
         shutil.copytree(root, stage, symlinks=True)
         # 只替换上次安装管理的文件，未知本地文件保留，配置始终在外部。
@@ -202,8 +205,16 @@ def sync_snapshot(root, check_only=False, backup_root=None):
         try:
             os.rename(stage, root)
         except OSError:
-            os.rename(old, root)
+            try:
+                os.rename(old, root)
+            except OSError:
+                preserve_work = True
+                return response("unavailable", "新版替换和旧版恢复均未完成；旧目录与备份已保留，请先恢复再继续。",
+                                recovery=str(old), backup=str(backup), path=str(root))
             raise
+    finally:
+        if not preserve_work:
+            shutil.rmtree(work)
     return response("updated", "已备份并更新。请立即重新读取SKILL.md及所需参考文件。",
                     previous=before, commit=latest, backup=str(backup), version=files["VERSION"].decode().strip())
 

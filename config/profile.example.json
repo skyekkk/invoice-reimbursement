@@ -1,0 +1,21 @@
+{
+  "claimant_name": null,
+  "excel_department": null,
+  "feishu_department_name": null,
+  "feishu_department_path": [],
+  "invoice_entity": null,
+  "invoice_nature": null,
+  "default_payment_category": "业务类差旅费",
+  "daily_allowance": "80.00",
+  "currency": "CNY",
+  "payee": null,
+  "bank_name": null,
+  "bank_account": null,
+  "supplemental_receipts": {
+    "allowed": null,
+    "basis": null
+  },
+  "template_path": null,
+  "archive_root": null,
+  "note": "仅为结构示例；80元标准等须由使用者确认。保存在技能目录之外，不上传GitHub。"
+}

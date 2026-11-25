@@ -1,0 +1,4 @@
+interface:
+  display_name: "发票报销助手"
+  short_description: "先检查更新，核对行程及票据，确认Excel后准备飞书报销，按当次授权提交"
+  default_prompt: "请使用 $invoice-reimbursement，先检查GitHub更新，再整理本次差旅发票并填写Excel给我确认，确认后准备飞书付款申请。"

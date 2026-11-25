@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.env
+.env.*
+profile.json
+profile.local.json
+原始资料/
+工作底稿/
+飞书上传附件/
+outputs/
+node_modules/
+.skill-install.json
